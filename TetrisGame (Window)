@@ -1,0 +1,36 @@
+package Tetris;
+
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+
+import javax.swing.JFrame;
+
+public class TetrisGame {
+	
+
+	public static final int HEIGHT =640;
+	public static final int WIDTH = 317;
+	
+	private JFrame frame;
+	private Board board;
+	
+	
+	
+	public TetrisGame()
+	{
+		frame = new JFrame();
+		board = new Board();
+		frame.setSize(WIDTH, HEIGHT);
+		frame.setLocationRelativeTo(null);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.add(board);
+		frame.addKeyListener(board);
+		frame.setVisible(true);
+		
+	}
+	public static void main(String args[])
+	{
+		new TetrisGame();
+	}
+	
+}
