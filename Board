@@ -1,0 +1,163 @@
+package Tetris;
+
+
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.image.BufferedImage;
+
+import javax.imageio.ImageIO;
+import javax.swing.JPanel;
+import javax.swing.Timer;
+
+public class Board extends JPanel implements KeyListener{
+	
+	private final int blockSize = 30;
+	private final int boardWidth = 10;
+	private final int boardHeight = 20;
+	
+	private BufferedImage block;
+	
+	private int[][] board = new int[boardHeight][boardWidth];
+	
+	private Shape shape[] = new Shape[7];
+	private Shape currentShape;
+	
+	private Timer timer;
+	
+	private final int FPS = 60;
+	private final int DELAY = 1000/60;
+	
+	private boolean gameOver= false;
+	
+	
+	
+	public Board()
+	{
+		try
+		{
+			block =  ImageIO.read(Board.class.getResource("/block.png"));
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		shape[0] = new Shape(new int[][] {{1,1,1,1}}, this,block.getSubimage(0*blockSize, 0,blockSize,blockSize),1);
+		
+		shape[1] = new Shape(new int[][] {{1,1,0},
+										  {0,1,1}}, this,block.getSubimage(1*blockSize, 0,blockSize,blockSize),2);
+		shape[2] = new Shape(new int[][] {{0,1,1},
+										  {1,1,0}}, this,block.getSubimage(2*blockSize, 0,blockSize,blockSize),3);
+		shape[3] = new Shape(new int[][] {{1,1,1},
+										  {0,1,0}}, this,block.getSubimage(3*blockSize, 0,blockSize,blockSize),4);
+		shape[4] = new Shape(new int[][] {{1,1,1},
+										  {0,0,1}}, this,block.getSubimage(4*blockSize, 0,blockSize,blockSize),5);
+		shape[5] = new Shape(new int[][] {{1,1,1},
+										  {1,0,0}}, this,block.getSubimage(5*blockSize, 0,blockSize,blockSize),6);
+		shape[6] = new Shape(new int[][] {{1,1},
+										  {1,1}}, this,block.getSubimage(6*blockSize,0,blockSize,blockSize),7);
+
+		setNextShape();
+		
+		timer = new Timer(DELAY, new ActionListener()
+		{
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				update();
+				repaint();
+			}
+		});
+		
+		timer.start();
+	}
+	
+	public int getBlockSize()
+	{
+		return blockSize;
+	}
+	
+	public void update()
+	{
+		currentShape.update();
+		if(gameOver)
+			timer.stop();
+		
+	}
+
+
+	public void paintComponent(Graphics g)
+	{
+		
+		super.paintComponent(g);
+
+		g.setColor(Color.GRAY);
+		g.fillRect(0, 0, TetrisGame.WIDTH, TetrisGame.HEIGHT);
+		for(int row =0; row < board.length; row++)
+			for(int col=0; col < board[row].length; col++)
+				if(board[row][col]!=0)
+				g.drawImage(block.getSubimage((board[row][col]-1)*blockSize, 0, blockSize, blockSize), 
+						col*blockSize, row*blockSize, null);
+		
+	
+		currentShape.render(g);
+		
+		g.setColor(Color.BLACK);
+		for(int i=0; i <=  boardHeight; i++) 								
+			g.drawLine(0, i*blockSize,blockSize*boardWidth,i*blockSize);
+		for(int j=0; j <= boardWidth; j++)								
+			g.drawLine(j*blockSize,0,j*blockSize,blockSize*boardHeight);
+	}
+	
+	public void setNextShape()
+	{
+		int index =(int) (Math.random()*shape.length);
+		Shape newShape = new Shape(shape[index].getCoords(),this, shape[index].getBlock(),shape[index].getColor());
+		currentShape=newShape;
+		
+		for(int row =0; row < currentShape.getCoords().length; row++)
+			for(int col=0; col < currentShape.getCoords()[row].length; col++)
+				if(currentShape.getCoords()[row][col]!=0)
+				{
+					if(board[row][col+3]!=0)
+						gameOver = true;
+				}
+	}
+
+	public int[][] getBoard()
+	{
+		return board;
+	}
+	
+	@Override
+	public void keyPressed(KeyEvent e) 
+	{
+		if(e.getKeyCode()==KeyEvent.VK_RIGHT)
+			currentShape.setDeltaX(1);
+		if(e.getKeyCode()==KeyEvent.VK_LEFT)
+			currentShape.setDeltaX(-1);
+		
+		if(e.getKeyCode()==KeyEvent.VK_DOWN)
+			currentShape.speedDown();
+		
+		if(e.getKeyCode()==KeyEvent.VK_UP)
+			currentShape.rotate();
+		
+		
+			
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e)
+	{
+		if(e.getKeyCode()==KeyEvent.VK_DOWN)
+			currentShape.speedNormal();
+		
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e) {}
+}
