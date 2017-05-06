@@ -1,5 +1,7 @@
 # Tetris
 
 
-Simple Tetris Game written in Java (runnable jar file included)
+Simple Tetris Game written in Java
+
+
 Controls: Arrow keys
